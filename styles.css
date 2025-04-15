@@ -1,0 +1,101 @@
+/* styles.css */
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9fdfc;
+    color: #203040;
+  }
+  
+  .vnaicall-header {
+    background-color: #d1f0e3;
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 3px solid #89c9b8;
+  }
+  
+  .vnaicall-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: #024731;
+  }
+  
+  .vnaicall-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 2rem;
+    gap: 2rem;
+  }
+  
+  .vnaicall-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    max-width: 320px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .vnaicall-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .vnaicall-gif {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+  }
+  
+  .vnaicall-card h2 {
+    font-size: 1.4rem;
+    color: #056956;
+    margin-bottom: 0.5rem;
+  }
+  
+  .vnaicall-card p {
+    font-size: 1rem;
+    color: #304050;
+  }
+  
+  .vnaicall-footer {
+    background-color: #c3e8da;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 500;
+    border-top: 3px solid #89c9b8;
+    color: #024731;
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .vnaicall-section {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .vnaicall-card {
+      max-width: 90%;
+    }
+  
+    .vnaicall-header h1 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .vnaicall-card h2 {
+      font-size: 1.2rem;
+    }
+  
+    .vnaicall-card p {
+      font-size: 0.95rem;
+    }
+  
+    .vnaicall-footer {
+      font-size: 0.9rem;
+    }
+  }
+  
