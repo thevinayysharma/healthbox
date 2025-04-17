@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medic Panel</title>
+  <link rel="stylesheet" href="medicpanel.css" />
+  <style>
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="control-panel">
+      <h2>Control Panel</h2>
+
+      <div class="control-item">
+        <input type="text" id="searchInput" placeholder="Search (e.g., ldl or hdl)" />
+        <button onclick="handleSearch()">Search</button>
+      </div>
+
+      <div class="control-item">
+        <input type="file" id="fileInput" />
+      </div>
+
+      <div class="checkbox-group">
+        <h4>Select Options:</h4>
+        <label class="checkbox-label">
+          <input type="checkbox"> Visualize Affected Organ
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> Predictive Health
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> Medicinal Impact
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> Doctor Perspective
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> User Perspective
+        </label>
+      </div>
+    </aside>
+
+    <main class="visual-text">
+      <section class="visual-playground" id="visualSection">
+        <p>Search "ldl" or "hdl" to view cholestrol visualization.</p>
+      </section>
+
+      <section class="text-info" id="textInfoSection">
+        <h3>Medical Information</h3>
+        <p id="infoText">Information about the selected topic will appear here.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+  <script>
+    async function handleSearch() {
+      const query = document.getElementById("searchInput").value.toLowerCase().trim();
+      const visual = document.getElementById("visualSection");
+      const info = document.getElementById("infoText");
+      visual.innerHTML = "";
+
+      const keyword = query.includes("ldl") ? "ldl" : query.includes("hdl") ? "hdl" : null;
+
+      if (!keyword) {
+        visual.innerHTML = "<p>Search 'ldl' or 'hdl' to view visualization.</p>";
+        info.innerText = "No data available for the entered term.";
+        return;
+      }
+
+      try {
+        const response = await fetch("./data/data.json");
+        const data = await response.json();
+        info.innerText = data[keyword]?.description || "Description not available.";
+      } catch (err) {
+        info.innerText = "Failed to load data.";
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.type = "module";
+      script.src = `../visualizations/${keyword}.js`;
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>

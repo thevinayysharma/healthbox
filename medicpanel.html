@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medic Panel</title>
+  <link rel="stylesheet" href="medicpanel.css" />
+  <style>
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="control-panel">
+      <h2>Control Panel</h2>
+
+      <div class="control-item">
+        <input type="text" id="searchInput" placeholder="Search (e.g., ldl or hdl)" />
+        <button onclick="handleSearch()">Search</button>
+      </div>
+
+      <div class="control-item">
+        <label for="fileInput">Upload Medical Report</label>
+        <input text="add report" type="file" id="fileInput" />
+      </div>
+
+      <div class="checkbox-group">
+        <h4>Select Options:</h4>
+        <label class="checkbox-label">
+          <input type="checkbox"> Visualize Affected Organ
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> Predictive Health
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> Medicinal Impact
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> Doctor Perspective
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"> User Perspective
+        </label>
+      </div>
+    </aside>
+
+    <main class="visual-text">
+      <section class="visual-playground" id="visualSection">
+        <p>Search "ldl" or "hdl" to view cholesterol visualization.</p>
+      </section>
+
+      <section class="text-info" id="textInfoSection">
+        <h3>Medical Report Information</h3>
+        <p id="infoText">Information about the selected topic will appear here.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  
+  <script>
+    // Handle search input and load relevant visualization
+    async function handleSearch() {
+      const query = document.getElementById("searchInput").value.toLowerCase().trim();
+      const visual = document.getElementById("visualSection");
+      const info = document.getElementById("infoText");
+      visual.innerHTML = "";
+      
+      // Determine if the search term is valid
+      const keyword = query.includes("ldl") ? "ldl" : query.includes("hdl") ? "hdl" : null;
+
+      if (!keyword) {
+        visual.innerHTML = "<p>Search 'ldl' or 'hdl' to view visualization.</p>";
+        info.innerText = "No data available for the entered term.";
+        return;
+      }
+
+      try {
+        const response = await fetch("./data/data.json");
+        const data = await response.json();
+        info.innerText = data[keyword]?.description || "Description not available.";
+      } catch (err) {
+        info.innerText = "Failed to load data.";
+        return;
+      }
+
+      // Once search is valid, display the visualization
+      displayVisualization(keyword);
+    }
+
+    // Function to display LDL/HDL visualization
+    function displayVisualization(keyword) {
+      const container = document.getElementById('visualSection');
+      createArteryVisualization(container);
+    }
+
+    // Create the 3D Artery Visualization
+
+    function createArteryVisualization(container) {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    // Lighting: Add Ambient and Point Lights for better illumination
+    const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft ambient light
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100); // Point light for more focused illumination
+    pointLight.position.set(10, 10, 10); // Set light position to create shadows and highlights
+    scene.add(pointLight);
+
+    // Artery Geometry (cylindrical shape)
+    const arteryGeometry = new THREE.CylinderGeometry(2, 2, 60, 32); // Cylinder with a radius of 2
+    const arteryMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x8B0000,  // Dark red color for the artery
+        roughness: 0.3,   // Adding roughness to make the surface feel less smooth
+        metalness: 0.2    // Add some shininess to the material to make it more realistic
+    });
+
+    const artery = new THREE.Mesh(arteryGeometry, arteryMaterial);
+    artery.rotation.x = Math.PI / 2;
+    artery.position.set(0, 0, -30); // Adjusted position for better view
+    scene.add(artery);
+
+    // Heart Geometry (simple sphere for visualization)
+    const heartGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const heartMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xFF0000,  // Bright red for the heart
+        roughness: 0.4,   // Slight roughness for a natural look
+        metalness: 0.1    // Lower metalness to keep it soft
+    });
+    const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+    heart.position.set(0, 0, 30); // Adjusted position for better view
+    scene.add(heart);
+
+    // Cholesterol Particles (larger size for better visualization)
+    const cholesterolGeometry = new THREE.SphereGeometry(1, 16, 16); // Increased particle size
+    const cholesterolMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFF00 }); // Yellow color for cholesterol
+
+    // Create cholesterol particles
+    const cholesterolParticles = [];
+    for (let i = 0; i < 20; i++) { // Increased number of particles
+        const particle = new THREE.Mesh(cholesterolGeometry, cholesterolMaterial);
+        particle.position.set(-28, Math.random() * 3 - 1.5, Math.random() * 3 - 1.5); // Start position at the left end of the artery
+        scene.add(particle);
+        cholesterolParticles.push(particle);
+    }
+
+    // Labels (Artery, Cholesterol, Heart)
+    const labelArtery = createLabel('Artery');
+    labelArtery.position.set(0, 4, 0);
+    scene.add(labelArtery);
+
+    const labelCholesterol = createLabel('LDL Cholesterol');
+    labelCholesterol.position.set(-20, 2, 0);
+    scene.add(labelCholesterol);
+
+    const labelHeart = createLabel('Heart');
+    labelHeart.position.set(0, 4, 30);
+    scene.add(labelHeart);
+
+    // Camera position
+    camera.position.z = 40;
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Simulate cholesterol particle movement (moving towards the heart)
+        cholesterolParticles.forEach((particle) => {
+            particle.position.x += 0.1; // Moving towards the right (heart)
+            if (particle.position.x > 5) {
+                particle.position.x = -28; // Loop the particles to simulate continuous flow
+            }
+        });
+
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    // Helper function to create labels (text)
+    function createLabel(text) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        context.font = '30px Arial';
+        context.fillStyle = 'white';
+        context.fillText(text, 10, 50);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            opacity: 1,
+        });
+        const geometry = new THREE.PlaneGeometry(4, 1.5);
+        const mesh = new THREE.Mesh(geometry, material);
+        return mesh;
+    }
+}
+
+  </script>
+</body>
+</html>
